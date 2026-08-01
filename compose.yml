@@ -4,12 +4,15 @@ services:
     devices:
       - /dev/kvm
     group_add:
-      - "108"   # ← deine tatsächliche kvm-GID aus getent group kvm
+      - "108"   # deine echte kvm-GID aus `getent group kvm`
     volumes:
-      - vdsm_storage:/storage
+      - /opt/vdsm-storage:/storage
     environment:
       KVM: "Y"
-    ...
-
-volumes:
-  vdsm_storage:
+      RAM_SIZE: "8G"
+      CPU_CORES: "6"
+      DISK_SIZE: "256G"
+    ports:
+      - "5000:5000"
+      - "2222:22"
+    restart: unless-stopped

@@ -1,9 +1,7 @@
 services:
   dsm:
+    image: dockurr/dsm
     container_name: dsm
-    image: vdsm/virtual-dsm
-    environment:
-      DISK_SIZE: "256G"
     devices:
       - /dev/kvm
       - /dev/net/tun
@@ -13,5 +11,5 @@ services:
       - 5000:5000
     volumes:
       - ./dsm:/storage
-    restart: always
+    restart: on-failure
     stop_grace_period: 2m

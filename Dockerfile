@@ -1,22 +1,16 @@
 # syntax=docker/dockerfile:1
-
 FROM qemux/qemu-host:2.06 AS builder
 FROM debian:trixie-slim
-
 ARG TARGETARCH
 ARG TARGETPLATFORM
-
 ARG VERSION_ARG="0.0"
 ARG VERSION_CSTRUCT="4.7"
 ARG VERSION_PASST="2026_07_28"
-
 ARG DEBCONF_NOWARNINGS="yes"
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG DEBCONF_NONINTERACTIVE_SEEN="true"
-
 RUN <<EOF
   set -eu
-
   apt-get update
   apt-get --no-install-recommends -y install \
     jq \
@@ -49,44 +43,32 @@ RUN <<EOF
     ca-certificates \
     netcat-openbsd \
     qemu-system-x86
-
   # Install Passt package
   wget "https://github.com/qemus/passt/releases/download/v${VERSION_PASST}/passt_${VERSION_PASST}_${TARGETARCH}.deb" -O /tmp/passt.deb -q --timeout=10
   dpkg -i /tmp/passt.deb
-
   apt-get clean
-
   # Install Python dependencies
   pip3 install --no-cache-dir --break-system-packages --root-user-action=ignore "dissect.cstruct==$VERSION_CSTRUCT"
-
   # Configure QEMU
   mkdir -p /etc/qemu
   echo "allow br0" > /etc/qemu/bridge.conf
-
   # Configure nginx
   unlink /etc/nginx/sites-enabled/default
   sed -i 's/^worker_processes.*/worker_processes 1;/' /etc/nginx/nginx.conf
-
   # Set version file
   echo "$VERSION_ARG" > /etc/version
-
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 EOF
-
 COPY --chmod=755 ./src /run/
 COPY --chmod=755 ./web /var/www/
 COPY --chmod=755 --from=builder /qemu-host.bin /run/host.bin
 COPY --chmod=744 ./web/conf/nginx.conf /etc/nginx/default.conf
 ADD --chmod=775 https://raw.githubusercontent.com/sud0woodo/patology/refs/heads/main/patology.py /run/extract.py
-
 VOLUME /storage
 EXPOSE 22 139 445 5000
-
 ENV RAM_SIZE="8G"
 ENV CPU_CORES="6"
 ENV DISK_SIZE="256G"
-ENV KVM="N"
-
+ENV KVM="Y"
 HEALTHCHECK --interval=60s --start-period=45s --retries=2 CMD ["/run/check.sh"]
-
 ENTRYPOINT ["/usr/bin/tini", "-s", "/run/entry.sh"]

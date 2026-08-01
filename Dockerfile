@@ -85,6 +85,7 @@ EXPOSE 22 139 445 5000
 ENV RAM_SIZE="2G"
 ENV CPU_CORES="2"
 ENV DISK_SIZE="256G"
+ENV KVM="N"
 
 HEALTHCHECK --interval=60s --start-period=45s --retries=2 CMD ["/run/check.sh"]
 

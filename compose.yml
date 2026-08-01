@@ -1,17 +1,15 @@
 services:
-  dsm:
+  vdsm:
     image: povtoffen/virtual-dsm
-    container_name: dsm
-    environment:
-      DISK_SIZE: "16G"
     devices:
       - /dev/kvm
-      - /dev/net/tun
-    cap_add:
-      - NET_ADMIN
-    ports:
-      - 5000:5000
+    group_add:
+      - "108"   # ← deine tatsächliche kvm-GID aus getent group kvm
     volumes:
-      - ./dsm:/storage
-    restart: on-failure
-    stop_grace_period: 2m
+      - vdsm_storage:/storage
+    environment:
+      KVM: "Y"
+    ...
+
+volumes:
+  vdsm_storage:

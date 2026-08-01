@@ -1,7 +1,9 @@
 services:
   dsm:
-    image: dockurr/dsm
+    image: povtoffen/virtual-dsm
     container_name: dsm
+    environment:
+      DISK_SIZE: "16G"
     devices:
       - /dev/kvm
       - /dev/net/tun
